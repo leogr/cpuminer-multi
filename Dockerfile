@@ -1,25 +1,19 @@
 #
-# Dockerfile for cpuminer
-# usage: docker run creack/cpuminer --url xxxx --user xxxx --pass xxxx
-# ex: docker run creack/cpuminer --url stratum+tcp://ltc.pool.com:80 --user creack.worker1 --pass abcdef
+# Dockerfile for cpuminer-multi
+# build: docker build --tags cpuminer-multi https://github.com/OhGodAPet/cpuminer-multi.git
+# usage: docker run cpuminer-multi --url xxxx --user xxxx --pass xxxx
+# ex: docker run cpuminer-multi --url stratum+tcp://ltc.pool.com:80 --user creack.worker1 --pass abcdef
 #
 #
+FROM alpine
 
-FROM		ubuntu:12.10
-MAINTAINER	Guillaume J. Charmes <guillaume@charmes.net>
+RUN apk add --no-cache alpine-sdk automake autoconf curl-dev
 
-RUN		apt-get update -qq
+RUN		git clone https://github.com/OhGodAPet/cpuminer-multi.git
 
-RUN		apt-get install -qqy automake
-RUN		apt-get install -qqy libcurl4-openssl-dev
-RUN		apt-get install -qqy git
-RUN		apt-get install -qqy make
+RUN		cd cpuminer-multi && ./autogen.sh
+RUN		cd cpuminer-multi && ./configure CFLAGS="-march=native"
+RUN		cd cpuminer-multi && make
 
-RUN		git clone https://github.com/pooler/cpuminer
-
-RUN		cd cpuminer && ./autogen.sh
-RUN		cd cpuminer && ./configure CFLAGS="-O3"
-RUN		cd cpuminer && make
-
-WORKDIR		/cpuminer
+WORKDIR		/cpuminer-multi
 ENTRYPOINT	["./minerd"]
